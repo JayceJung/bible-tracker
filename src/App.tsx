@@ -9,7 +9,7 @@ import { Card, CardContent, FormHelperText } from '@mui/material'
 function App() {
     const [book, setBook] = useState('ge')
     const [chapter, setChapter] = useState('1')
-    const [data, setData] = useState({ __html: '' })
+    const [data, setData] = useState([])
 
     const getChapters = (book: string) => {
         return books.find((bookName) => bookName.name === book)?.chapters
@@ -22,26 +22,28 @@ function App() {
     )
 
     useEffect(() => {
-        setChapter('1')
-    }, [book])
-
-    useEffect(() => {
         async function fetchBook() {
             console.log({ book })
             let response
             response = await fetch(
-                `http://localhost:8080/quote.php?kor=kor&book=${book}&verseRange=${chapter}`,
-                { mode: 'cors' }
+                `http://localhost:8080/getChapter?book=${book}&chapter=${chapter}`,
+                {
+                    mode: 'cors',
+                }
             )
-            const res = await response.text()
-            return { __html: res }
+            const res = await response.json()
+            return res
         }
-        fetchBook().then((res) => setData(res))
-        console.log(allChapters)
+        fetchBook().then((res) => {
+            setData(res)
+            console.log(res)
+        })
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [chapter, book])
 
     const handleBookChange = (event: SelectChangeEvent) => {
+        setChapter('1')
         setBook(event.target.value)
     }
     const handleChapterChange = (event: SelectChangeEvent) => {
@@ -80,10 +82,29 @@ function App() {
             </div>
             <Card variant="outlined" sx={{ maxWidth: '60%' }}>
                 <CardContent>
-                    <div
+                    {data.map((obj) => {
+                        return (
+                            <div style={{ display: 'flex', lineHeight: 2 }}>
+                                <div style={{ marginRight: '10px' }}>
+                                    {
+                                        // @ts-ignore
+                                        obj.paragraph
+                                    }
+                                </div>
+                                <div>
+                                    {
+                                        // @ts-ignore
+                                        obj.verse
+                                    }
+                                </div>
+                            </div>
+                        )
+                    })}
+                    {/*<div
                         dangerouslySetInnerHTML={data}
                         style={{ textAlign: 'left', lineHeight: 2 }}
-                    />
+                    /> */}
+                    <div />
                 </CardContent>
             </Card>
         </div>
